@@ -1,0 +1,37 @@
+# ============================================================
+#  VOD -> Shorts pipeline  |  dipendenze Python
+# ============================================================
+#  Testato su: Python 3.12.3, Linux/WSL2 con GPU NVIDIA (CUDA 12.1)
+#  Python richiesto: 3.11+
+#
+#  Installazione:
+#      python -m venv .venv
+#      source .venv/bin/activate        # Windows: .venv\Scripts\activate
+#      pip install -r requirements.txt
+#
+#  ATTENZIONE A TORCH: il pacchetto PyPI `torch` di default e' la build CPU.
+#  Per la GPU servono le wheel CUDA. Se hai una NVIDIA, installa prima torch
+#  dall'indice PyTorch, poi il resto:
+#      pip install torch==2.5.1 --index-url https://download.pytorch.org/whl/cu121
+#      pip install -r requirements.txt
+#  Senza GPU la pipeline funziona comunque: transcribe_engine rileva
+#  l'assenza di CUDA e degrada su CPU (molto piu' lenta).
+# ============================================================
+
+# --- Core pipeline ---
+faster-whisper==1.2.1
+torch==2.5.1
+numpy==2.4.4
+soundfile==0.13.1
+requests==2.34.0
+openai==2.36.0
+
+# --- Librerie CUDA distribuite via pip ---
+# transcribe_engine.py le aggiunge a LD_LIBRARY_PATH per farle trovare a
+# CTranslate2/faster-whisper in WSL2. Se usi una installazione CUDA di
+# sistema (o non hai NVIDIA) puoi rimuoverle: l'import e' protetto.
+nvidia-cublas-cu12==12.1.3.1
+nvidia-cudnn-cu12==9.1.0.70
+
+# --- Solo per experiments/stable_ts_probe.py (confronto A/B, non parte della pipeline) ---
+stable-ts==2.19.1

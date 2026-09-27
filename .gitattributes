@@ -1,0 +1,17 @@
+# Normalizza i fine riga a LF dentro il repository.
+#
+# I file di questo progetto sono nati su Windows e su WSL insieme, quindi in
+# giro ci sono sia CRLF sia LF. Senza questa normalizzazione, chi lavora su
+# Linux (o su WSL, dove la pipeline gira davvero) si ritrova diff di interi
+# file che sembrano modifiche enormi e in realtà sono solo fine riga diversi.
+#
+# Python legge indifferentemente LF e CRLF, quindi LF nel repo non dà problemi
+# a nessuno.
+* text=auto eol=lf
+
+# File che non vanno mai toccati dalla normalizzazione
+*.png binary
+*.jpg binary
+*.mp4 binary
+*.wav binary
+*.ass text eol=lf

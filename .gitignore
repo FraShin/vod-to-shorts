@@ -1,0 +1,51 @@
+# ============================================================
+#  Segreti e dati locali — MAI nel repository
+# ============================================================
+# Credenziali (chiavi API, token bot) — usa .env.example come modello
+.env
+!.env.example
+
+# Gusto personale dello streamer (catch-phrase, trigger, profilo AI).
+# vocabulary.example.json e' il modello vuoto e va committato.
+vocabulary.json
+!.vocabulary.example.json
+
+*.local
+secrets.local.json
+
+# ============================================================
+#  Dati di lavoro — pesanti o temporanei, non versionare
+# ============================================================
+# VOD sorgente: file enormi, non hanno niente a che fare col codice
+input/
+output/
+clips/
+Clips_Manuali/
+logs/
+
+# ============================================================
+#  Ambiente Python
+# ============================================================
+.venv/
+venv/
+env/
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.pytest_cache/
+
+# ============================================================
+#  Spazzatura del sistema operativo / editor
+# ============================================================
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*~
+*.save
+*.save.*
+
+# Backup dell'IDE e config locali
+.vscode/
+.idea/
