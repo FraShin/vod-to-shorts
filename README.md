@@ -189,6 +189,29 @@ pip install torch==2.5.1 --index-url https://download.pytorch.org/whl/cu121
 pip install -r requirements.txt
 ```
 
+If PowerShell refuses to run `Activate.ps1` with *"running scripts is disabled
+on this system"*, you don't have to touch your execution policy — skip
+activation and call the venv's interpreter by path. This matters more than it
+looks: a bare `pip` installs into your **global** Python when no venv is
+active, which quietly leaves you with an empty virtualenv and packages
+everywhere else.
+
+```powershell
+.venv\Scripts\python.exe -m pip install -r requirements.txt
+.venv\Scripts\python.exe main.py
+```
+
+To fix activation properly, allow locally-created scripts for your user only
+(no admin rights required):
+
+```powershell
+Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
+```
+
+If `Get-ExecutionPolicy -List` shows a policy under `MachinePolicy` or
+`UserPolicy`, that's set by Group Policy, it wins over the above, and the
+by-path approach is the way to go.
+
 **2. Tell it where ffmpeg is.** Windows machines almost never have it on
 `PATH`. Download a build, then add to `.env`:
 
