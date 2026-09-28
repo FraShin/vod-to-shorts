@@ -10,19 +10,51 @@ from faster_whisper import WhisperModel
 import config
 import vocabulary
 
-# Iniezione dinamica delle librerie CUDA installate via pip (pacchetti nvidia-*).
-# Serve in WSL2, dove CTranslate2 non le trova da solo. Su Windows nativo, su Mac
-# o su un sistema con CUDA di sistema quei pacchetti non esistono: in quel caso
-# si procede senza toccare LD_LIBRARY_PATH, invece di far fallire l'import.
-try:
-    import nvidia.cublas.lib as _cublas
-    import nvidia.cudnn.lib as _cudnn
+# ==============================
+# LIBRERIE CUDA: dove trovarle
+# ==============================
+# CTranslate2 (il motore di faster-whisper) non cerca le librerie CUDA dentro i
+# pacchetti pip `nvidia-*`: vanno rese visibili esplicitamente, e il modo giusto
+# dipende dal sistema operativo.
+#
+#   Linux/WSL -> i .so finiscono in site-packages/nvidia/<lib>/lib e si
+#                annunciano con LD_LIBRARY_PATH.
+#   Windows   -> i .dll finiscono in site-packages/nvidia/<lib>/bin, e dal
+#                Python 3.8 il PATH non basta più: serve os.add_dll_directory,
+#                il cui handle va tenuto vivo o il garbage collector chiude la
+#                cartella e le DLL tornano invisibili.
+#
+# Se non trova niente (CUDA di sistema, Mac, o solo CPU) non fa nulla: la
+# pipeline degrada su CPU invece di non partire.
+_DLL_HANDLES = []
 
-    _existing_path = os.environ.get("LD_LIBRARY_PATH", "")
-    _paths = [p for p in (_existing_path, _cublas.__path__[0], _cudnn.__path__[0]) if p]
-    os.environ["LD_LIBRARY_PATH"] = os.pathsep.join(_paths)
-except ImportError:
-    pass
+
+def _expose_cuda_libraries():
+    import glob
+    import sysconfig
+
+    candidati = [os.path.join(os.path.dirname(torch.__file__), "lib")]
+    for radice in {sysconfig.get_paths()["purelib"], sysconfig.get_paths()["platlib"]}:
+        candidati += glob.glob(os.path.join(radice, "nvidia", "*", "bin"))
+        candidati += glob.glob(os.path.join(radice, "nvidia", "*", "lib"))
+    candidati = [c for c in candidati if os.path.isdir(c)]
+    if not candidati:
+        return
+
+    if os.name == "nt":
+        for cartella in candidati:
+            try:
+                _DLL_HANDLES.append(os.add_dll_directory(cartella))
+            except (AttributeError, OSError):
+                pass
+    else:
+        esistente = os.environ.get("LD_LIBRARY_PATH", "")
+        os.environ["LD_LIBRARY_PATH"] = os.pathsep.join(
+            ([esistente] if esistente else []) + candidati
+        )
+
+
+_expose_cuda_libraries()
 
 
 def detect_audio_energy_spikes(wav_path, threshold_db=-12.0, window_ms=500) -> list:

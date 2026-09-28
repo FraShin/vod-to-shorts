@@ -143,6 +143,7 @@ actually matter:
 | `WHISPER_LANGUAGE` | Language spoken in the VOD. |
 | `TARGET_TOTAL_CLIPS` | How many clips per run. |
 | `USE_NVENC` | `0` to encode on CPU instead of NVIDIA hardware. |
+| `FFMPEG_BIN` | Path to ffmpeg if it isn't on your `PATH` — Windows almost always needs this. |
 | `DEEPSEEK_API_KEY` | Enables the LLM judge. |
 | `TELEGRAM_BOT_TOKEN` / `TELEGRAM_CHAT_ID` | Optional "pipeline finished" notification. |
 
@@ -171,6 +172,44 @@ recognise your catchphrases.
 
 Because `vocabulary.json` is gitignored, a `git pull` will never overwrite your
 values.
+
+---
+
+## Running on native Windows (no WSL)
+
+The pipeline runs on Windows 11 natively too. Two things need attention.
+
+**1. Install torch from the PyTorch index, not PyPI.** Same as on Linux, but
+easier to get wrong here:
+
+```powershell
+py -3.11 -m venv .venv
+.venv\Scripts\activate
+pip install torch==2.5.1 --index-url https://download.pytorch.org/whl/cu121
+pip install -r requirements.txt
+```
+
+**2. Tell it where ffmpeg is.** Windows machines almost never have it on
+`PATH`. Download a build, then add to `.env`:
+
+```
+FFMPEG_BIN=C:/ffmpeg/bin/ffmpeg.exe
+```
+
+Forward slashes work and save you from escaping backslashes. `ffprobe` is then
+looked up in the same folder automatically.
+
+The CUDA runtime ships *inside* the pip wheels on Windows: `torch/lib` holds
+cuBLAS and cuDNN, and `transcribe_engine.py` registers those directories with
+`os.add_dll_directory` before CTranslate2 loads, so `faster-whisper` finds them
+without you copying any DLL by hand.
+
+Then verify and go:
+
+```powershell
+python main.py --check
+python main.py --vod "C:\path\to\stream.mp4"
+```
 
 ---
 

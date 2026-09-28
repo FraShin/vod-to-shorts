@@ -27,7 +27,7 @@ def _run_ffmpeg(cmd: list[str], label: str, timeout: int) -> None:
 
 def _extract_clip_wav(video_path: str, wav_path: str, timeout: int) -> None:
     cmd = [
-        "ffmpeg", "-y", "-i", video_path,
+        config.FFMPEG_BIN, "-y", "-i", video_path,
         "-vn", "-ac", "1", "-ar", "16000",
         "-c:a", "pcm_s16le",
         "-loglevel", "warning",
@@ -111,7 +111,7 @@ def main():
         seek_fine = max(0.0, float(start) - seek_pre)
 
         cmd_step1 = [
-            "ffmpeg", "-y",
+            config.FFMPEG_BIN, "-y",
             *config.ffmpeg_input_args(),
             "-ss", str(seek_pre),
             "-i", input_video,
@@ -145,7 +145,7 @@ def main():
                 ass_for_filter = ass_for_filter.replace(":", "\\:", 1)
 
             cmd_step2 = [
-                "ffmpeg", "-y",
+                config.FFMPEG_BIN, "-y",
                 "-i", temp_no_subs,
                 "-vf", f"subtitles={ass_for_filter}",
                 *config.ffmpeg_video_encoder_args(),

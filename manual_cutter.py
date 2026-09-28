@@ -83,7 +83,7 @@ def render_manual_clip(
     seek_fine = max(0.0, float(t_start) - seek_pre)
 
     cmd_step1 = [
-        "ffmpeg", "-y",
+        config.FFMPEG_BIN, "-y",
         *config.ffmpeg_input_args(),
         "-ss", str(seek_pre),
         "-i", input_video,
@@ -111,7 +111,7 @@ def render_manual_clip(
         if has_subs:
             ass_for_filter = _escape_ass_path(ass_path)
             cmd_step2 = [
-                "ffmpeg", "-y",
+                config.FFMPEG_BIN, "-y",
                 "-i", temp_video,
                 "-vf", f"subtitles={ass_for_filter}",
                 *config.ffmpeg_video_encoder_args(),

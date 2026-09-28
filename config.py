@@ -94,6 +94,11 @@ TARGET_GAME_H = _env_int("TARGET_GAME_H", 1152)
 VIDEO_FPS = _env_int("VIDEO_FPS", 60)
 VIDEO_CQ = _env_int("VIDEO_CQ", 22)
 
+# Binario ffmpeg da usare. Se è nel PATH va benissimo il default; su Windows
+# spesso non c'è, e allora qui puoi indicare il percorso completo, es:
+#   FFMPEG_BIN=C:/ffmpeg/bin/ffmpeg.exe
+FFMPEG_BIN = os.environ.get("FFMPEG_BIN", "ffmpeg")
+
 # ==============================
 # TRACCE AUDIO DEL MP4 (0 = prima traccia)
 # ==============================

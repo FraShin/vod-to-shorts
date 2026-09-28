@@ -19,7 +19,7 @@ def extract_audio():
         return True
 
     cmd = [
-        "ffmpeg", "-y",
+        config.FFMPEG_BIN, "-y",
         "-i", input_video,
         "-map", f"0:a:{config.AUDIO_EXTRACT_STREAM_INDEX}",
         "-vn",

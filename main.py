@@ -106,15 +106,29 @@ def check_environment():
     v = sys.version_info
     esito(v >= (3, 11), f"Python {v.major}.{v.minor}.{v.micro}", "serve 3.11 o superiore")
 
-    ffmpeg = shutil.which("ffmpeg")
-    esito(bool(ffmpeg), "ffmpeg trovato", ffmpeg or "non è nel PATH: installalo")
+    # FFMPEG_BIN può essere il nome ("ffmpeg", cercato nel PATH) oppure un
+    # percorso completo: su Windows il PATH non lo contiene quasi mai.
+    ffmpeg = shutil.which(config.FFMPEG_BIN) or (
+        config.FFMPEG_BIN if os.path.isfile(config.FFMPEG_BIN) else None
+    )
+    esito(bool(ffmpeg), f"ffmpeg ({config.FFMPEG_BIN})",
+          "" if ffmpeg else "non trovato: installalo o imposta FFMPEG_BIN in .env")
+
+    # ffprobe sta sempre accanto a ffmpeg: se ffmpeg è assoluto e ffprobe non è
+    # nel PATH, lo cerchiamo nella stessa cartella.
     ffprobe = shutil.which("ffprobe")
-    esito(bool(ffprobe), "ffprobe trovato", ffprobe or "non è nel PATH (serve per leggere le tracce audio)")
+    if not ffprobe and ffmpeg:
+        accanto = os.path.join(
+            os.path.dirname(ffmpeg), "ffprobe.exe" if os.name == "nt" else "ffprobe"
+        )
+        ffprobe = accanto if os.path.isfile(accanto) else None
+    esito(bool(ffprobe), "ffprobe",
+          "" if ffprobe else "non trovato: serve per leggere le tracce audio")
 
     if ffmpeg:
         try:
             encoder = subprocess.run(
-                ["ffmpeg", "-hide_banner", "-encoders"],
+                [config.FFMPEG_BIN, "-hide_banner", "-encoders"],
                 capture_output=True, text=True, timeout=30,
             ).stdout
             if config.USE_NVENC:
@@ -126,7 +140,7 @@ def check_environment():
                 esito("libx264" in encoder, "encoder libx264")
 
             filtri = subprocess.run(
-                ["ffmpeg", "-hide_banner", "-filters"],
+                [config.FFMPEG_BIN, "-hide_banner", "-filters"],
                 capture_output=True, text=True, timeout=30,
             ).stdout
             libass_ok = "subtitles" in filtri
