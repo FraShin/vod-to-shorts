@@ -244,6 +244,23 @@ def transcribe_audio():
         duration = time.time() - start_time
         print(f"✅ Trascrizione e iniezione RMS completate in {duration:.2f} secondi.")
         print(f"📝 Totale segmenti elaborati: {len(segments_list)}")
+
+        # Zero segmenti non è un successo: significa che in questa traccia non c'è
+        # parlato riconoscibile. Fermarsi qui con una spiegazione è molto meglio
+        # che scrivere un JSON vuoto e far rompere lo stadio successivo con un
+        # errore che non dice niente ("Nessun segmento trovato nel file").
+        if not segments_list:
+            print("❌ Nessun parlato riconosciuto: 0 segmenti trascritti.")
+            print("   La pipeline si ferma qui, invece di rompersi più avanti.")
+            print("   Cause tipiche, in ordine di frequenza:")
+            print("     1. AUDIO_EXTRACT_STREAM_INDEX punta a una traccia sbagliata")
+            print("        o vuota. Elenco tracce del VOD:")
+            print("        ffprobe -v error -select_streams a -show_entries stream=index,codec_name <vod>")
+            print("     2. la traccia non contiene voce (solo audio di gioco o silenzio)")
+            print("     3. volume troppo basso perché Whisper riconosca il parlato")
+            print(f"   Audio analizzato: {input_audio}")
+            return False
+
         return True
 
     except Exception as e:
