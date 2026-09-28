@@ -294,6 +294,30 @@ def ffmpeg_timeout(duration_sec: float) -> int:
     return int(FFMPEG_TIMEOUT_BASE + max(0.0, duration_sec) * FFMPEG_TIMEOUT_PER_SEC)
 
 
+def ffmpeg_subtitle_path(ass_path: str) -> str:
+    """Prepara il percorso di un .ass per il filtro `subtitles=` di ffmpeg.
+
+    Due cose vanno sistemate, e la seconda è controintuitiva:
+
+    1. Su Windows il percorso contiene ':' (C:/...), che per il parser dei
+       filtri di ffmpeg è il separatore fra opzioni.
+    2. L'escape vuole DUE backslash, non uno. Il primo livello di escape lo
+       consuma il parser del filtergraph, il secondo il parser del filtro.
+       Con un solo backslash ffmpeg legge "C" come nome del file e tutto il
+       resto come valore di `original_size`, fallendo con:
+           Unable to parse "original_size" option value "..." as image size
+       Le due varianti sono state provate su ffmpeg 9.0.1: un backslash fallisce,
+       due funzionano.
+
+    Su Linux/WSL il percorso non contiene ':' e questa funzione non cambia
+    nulla: è il motivo per cui il bug si manifestava solo su Windows.
+    """
+    p = os.path.abspath(ass_path).replace("\\", "/")
+    if len(p) >= 2 and p[1] == ":":
+        p = p.replace(":", "\\\\:", 1)
+    return p
+
+
 def clean_filename(text):
     text = text.replace("è", "e").replace("é", "e").replace("à", "a")
     text = text.replace("ò", "o").replace("ù", "u").replace("ì", "i")

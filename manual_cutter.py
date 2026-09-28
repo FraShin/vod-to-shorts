@@ -14,14 +14,6 @@ TRANSCRIPTION_FILE = os.path.join(config.OUTPUT_DIR, "transcription.json")
 # condivisa con cut_engine.py. USE_NVENC nel .env sceglie NVENC o libx264.
 
 
-def _escape_ass_path(ass_path: str) -> str:
-    """Path per filtro subtitles= di FFmpeg (slash + escape drive letter Windows)."""
-    p = os.path.abspath(ass_path).replace("\\", "/")
-    if len(p) >= 2 and p[1] == ":":
-        p = p.replace(":", "\\:", 1)
-    return p
-
-
 def transcription_matches_vod(transcription_path: str, video_path: str) -> bool:
     if not os.path.exists(transcription_path):
         return False
@@ -109,7 +101,7 @@ def render_manual_clip(
             has_subs = os.path.isfile(ass_path) and os.path.getsize(ass_path) > 200
 
         if has_subs:
-            ass_for_filter = _escape_ass_path(ass_path)
+            ass_for_filter = config.ffmpeg_subtitle_path(ass_path)
             cmd_step2 = [
                 config.FFMPEG_BIN, "-y",
                 "-i", temp_video,

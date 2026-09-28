@@ -140,9 +140,7 @@ def main():
             else:
                 generate_clip_ass(start, end, all_words, ass_path, sub_delay=0.0)
 
-            ass_for_filter = os.path.abspath(ass_path).replace("\\", "/")
-            if len(ass_for_filter) >= 2 and ass_for_filter[1] == ":":
-                ass_for_filter = ass_for_filter.replace(":", "\\:", 1)
+            ass_for_filter = config.ffmpeg_subtitle_path(ass_path)
 
             cmd_step2 = [
                 config.FFMPEG_BIN, "-y",
