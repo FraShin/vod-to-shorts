@@ -5,9 +5,27 @@ Ogni valore e' sovrascrivibile da variabile d'ambiente, e le variabili si
 possono mettere in `scripts/.env` (file locale, gitignorato). Vedere
 `.env.example` per la lista completa.
 """
-import os
 import glob
+import os
 import re
+import sys
+
+# ==============================
+# OUTPUT A PROVA DI WINDOWS
+# ==============================
+# Gli stadi stampano emoji, e main.py reindirizza l'output di ognuno in
+# logs/<stadio>.py.log. Su Windows, quando stdout NON è un terminale ma un
+# file, Python usa la codepage locale (cp1252) e il primo print() con un'emoji
+# fa morire lo stadio con UnicodeEncodeError. Su Linux/WSL non succede, perché
+# lì l'encoding di default è già UTF-8: il problema esisteva solo su Windows.
+# errors="replace" fa diventare "?" un carattere non rappresentabile invece di
+# interrompere la pipeline.
+for _stream in (sys.stdout, sys.stderr):
+    try:
+        _stream.reconfigure(encoding="utf-8", errors="replace")
+    except (AttributeError, ValueError, OSError):
+        # Stream non riconfigurabile (test, pipe esotiche): si prosegue.
+        pass
 
 SCRIPTS_DIR = os.path.dirname(os.path.abspath(__file__))
 _PROJECT_ROOT = os.path.dirname(SCRIPTS_DIR)
@@ -244,6 +262,12 @@ def ffmpeg_vertical_stack_filter():
 def ffmpeg_mix_audio_filter():
     mi = AUDIO_MIC_STREAM_INDEX
     gi = AUDIO_GAME_STREAM_INDEX
+    # VOD con una sola traccia audio (microfono e gioco già mixati a monte, come
+    # nei file ritagliati o ri-esportati): indicizzare due volte la stessa traccia
+    # e passarla ad amix sommerebbe il segnale con sé stesso, raddoppiandolo e
+    # saturando. In quel caso serve un solo volume, non un mix.
+    if mi == gi:
+        return f"[0:a:{mi}]asetpts=PTS-STARTPTS,volume={MIC_VOLUME}[a]"
     # normalize=0: i coefficienti volume= sono quelli effettivi (senza dimezzamento amix).
     return (
         f"[0:a:{mi}]asetpts=PTS-STARTPTS,volume={MIC_VOLUME}[mic];"

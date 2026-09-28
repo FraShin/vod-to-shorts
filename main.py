@@ -278,12 +278,17 @@ def esegui_script(script, description, output_file=""):
     log_file = os.path.join(LOGS_DIR, f"{script}.log")
 
     try:
-        with open(log_file, "w") as log:
+        # encoding esplicito perché il log contiene emoji.
+        # PYTHONUTF8 / PYTHONIOENCODING: ogni stadio è un processo separato, e su
+        # Windows con l'output reindirizzato su file Python userebbe cp1252,
+        # facendo morire il primo print() con un'emoji (UnicodeEncodeError).
+        with open(log_file, "w", encoding="utf-8", errors="replace") as log:
             result = subprocess.run(
                 [sys.executable, full_script],
                 timeout=7200,
                 stdout=log,
-                stderr=log
+                stderr=log,
+                env={**os.environ, "PYTHONUTF8": "1", "PYTHONIOENCODING": "utf-8"},
             )
 
         duration = time.time() - start_time
