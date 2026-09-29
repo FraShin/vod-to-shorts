@@ -1,22 +1,22 @@
 {
   "_instructions": [
-    "MODELLO VUOTO — il codice NON legge questo file: legge 'vocabulary.json' (senza .example).",
-    "Uso: copia questo file in vocabulary.json e riempi quello. vocabulary.json e' gitignorato,",
-    "quindi i tuoi valori restano sul tuo PC e un 'git pull' non te li sovrascrive.",
-    "Se vocabulary.json non esiste la pipeline gira comunque: salta il rilevamento delle",
-    "catch-phrase ma il rilevamento acustico (Cinema Engine) e lo scoring di base funzionano.",
-    "Le chiavi che iniziano con '_' sono ignorate dal loader: usale per le tue note.",
-    "I valori sotto sono VUOTI di proposito. Gli esempi sono nel campo _help di ogni sezione."
+    "EMPTY TEMPLATE — the code does NOT read this file: it reads 'vocabulary.json' (without .example).",
+    "Usage: copy this file to vocabulary.json and fill that one in. vocabulary.json is gitignored,",
+    "so your values stay on your machine and a 'git pull' never overwrites them.",
+    "If vocabulary.json is missing the pipeline still runs: it skips catch-phrase",
+    "detection, but acoustic detection (Cinema Engine) and base scoring keep working.",
+    "Keys starting with '_' are ignored by the loader: use them for your own notes.",
+    "The values below are EMPTY on purpose. Examples live in the _help field of each section."
   ],
 
   "profile": {
     "_help": [
-      "Chi sei. Serve a costruire il prompt dell'agente AI che sceglie le clip finali.",
-      "name            : il tuo nome/handle come vuoi che appaia nel prompt",
-      "genres          : i tuoi generi (es. [\"horror\", \"soulslike\"])",
-      "description     : il tuo stile in poche parole (es. \"autentico, ironico, reattivo\")",
-      "selection_notes : regole extra per l'AI, una per riga (es. \"elimina le chiacchiere su esami e film\")",
-      "Se lasci tutto vuoto l'AI funziona lo stesso, ma non sa nulla del tuo stile."
+      "Who you are. Used to build the prompt of the AI agent that picks the final clips.",
+      "name            : your name/handle, as you want it to appear in the prompt",
+      "genres          : your genres (e.g. [\"horror\", \"soulslike\"])",
+      "description     : your style in a few words (e.g. \"authentic, ironic, reactive\")",
+      "selection_notes : extra rules for the AI, one per line (e.g. \"drop the chat about exams and films\")",
+      "If you leave everything empty the AI still works, but it knows nothing about your style."
     ],
     "name": "",
     "genres": [],
@@ -26,12 +26,12 @@
 
   "whisper_prompt": {
     "_help": [
-      "Suggerimento passato a Whisper per fargli trascrivere meglio nomi propri, gergo e",
-      "tormentoni, che altrimenti inventa (i classici: un tormentone urlato diventa una",
-      "parola che gli somiglia).",
-      "vod  : usato sulla trascrizione completa del VOD",
-      "clip : versione breve, usata quando Whisper rigira sui singoli tagli",
-      "Tienili CORTI. Frasi molto lunghe peggiorano la trascrizione invece di migliorarla."
+      "Hint passed to Whisper so it transcribes proper nouns, jargon and catch-phrases",
+      "better — otherwise it invents them (the classic: a shouted catch-phrase becomes a",
+      "word that merely sounds like it).",
+      "vod  : used on the full VOD transcript",
+      "clip : shorter version, used when Whisper re-runs on the individual cuts",
+      "Keep them SHORT. Very long sentences make transcription worse, not better."
     ],
     "vod": "",
     "clip": ""
@@ -39,17 +39,17 @@
 
   "hype": {
     "_help": [
-      "Le tue frasi clou. Il codice le usa in tre modi:",
-      "  phrases          -> unisce segmenti vicini e ancora il taglio sul momento forte",
-      "  words            -> come phrases, ma su singole parole (match esatto, non sottostringa:",
-      "                      cosi' \"go\" non scatta dentro \"prego\")",
-      "  absolute_phrases -> sottoinsieme 'iconico': recupera un highlight anche se l'AI l'ha",
-      "                      scartato, ed e' l'ultima rete di sicurezza della selezione",
-      "Regola: phrases e absolute_phrases sono espressioni multi-parola, tutto minuscolo.",
-      "        words sono singoli token.",
-      "Esempio phrases: [\"a nanna\", \"porco trollo\"] — words: [\"nanna\", \"sium\"]",
-      "Dai in pasto all'agente e al merge: qui NON mettere parolacce generiche,",
-      "sennò ogni due minuti parte una clip."
+      "Your key phrases. The code uses them in three ways:",
+      "  phrases          -> merges nearby segments and anchors the cut on the big moment",
+      "  words            -> like phrases, but on single words (exact match, not substring:",
+      "                      so \"go\" does not fire inside \"prego\")",
+      "  absolute_phrases -> the 'iconic' subset: recovers a highlight even if the AI",
+      "                      rejected it, and is the last safety net of the selection",
+      "Rule: phrases and absolute_phrases are multi-word expressions, all lowercase.",
+      "        words are single tokens.",
+      "Example phrases: [\"a nanna\", \"porco trollo\"] — words: [\"nanna\", \"sium\"]",
+      "These get fed to the agent and to the merge: do NOT put generic swearing here,",
+      "or a clip will fire every two minutes."
     ],
     "phrases": [],
     "words": [],
@@ -58,15 +58,15 @@
 
   "triggers": {
     "_help": [
-      "Parole che danno punteggio ai segmenti. Ogni categoria pesa diversamente:",
-      "  god_tier -> bonus massimo: il momento che vale lo Short da solo",
-      "  shock    -> stupore, incredulita'",
-      "  panic    -> paura, urgenza (horror)",
-      "  clutch   -> impresa, vittoria, 'ce l'abbiamo fatta'",
-      "  lore     -> riflessione, scoperta, spiegazione",
-      "Tutto minuscolo. Le frasi di 3 caratteri o meno richiedono match a parola intera.",
-      "Attenzione: sono le parole DEL TUO modo di streammare. Il testo qui sotto e'",
-      "solo un esempio generico, sostituiscilo con il tuo."
+      "Words that score segments. Each category weighs differently:",
+      "  god_tier -> maximum bonus: the moment that is a Short on its own",
+      "  shock    -> astonishment, disbelief",
+      "  panic    -> fear, urgency (horror)",
+      "  clutch   -> a feat, a win, 'we made it'",
+      "  lore     -> reflection, discovery, explanation",
+      "All lowercase. Phrases of 3 characters or less require a whole-word match.",
+      "Note: these are the words of YOUR way of streaming. The text below is",
+      "only a generic example, replace it with your own."
     ],
     "god_tier": [],
     "shock": [],
@@ -77,10 +77,10 @@
 
   "slang_fixes": {
     "_help": [
-      "Correzioni applicate al testo PRIMA di calcolare il punteggio.",
-      "Chiave: espressione regolare (regex). Valore: come va scritta a schermo.",
-      "Rimedia a quello che Whisper sente male sui tormentoni.",
-      "Esempio: {\"(?i)\\\\b(ah\\\\s+)?nanna\\\\b\": \"A nanna!\"}"
+      "Corrections applied to the text BEFORE scoring.",
+      "Key: a regular expression (regex). Value: how it should be written on screen.",
+      "Fixes what Whisper mishears in your catch-phrases.",
+      "Example: {\"(?i)\\\\b(ah\\\\s+)?nanna\\\\b\": \"A nanna!\"}"
     ]
   }
 }

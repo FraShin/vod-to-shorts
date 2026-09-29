@@ -65,7 +65,7 @@ def word(text: str, start: float, end: float) -> dict:
 
 
 def build_fake_transcription() -> dict:
-    """Sei segmenti che coprono i casi che contano."""
+    """Six segments covering the cases that matter."""
     return {
         "source_vod": "TEST.mp4",
         "source_vod_path": "/tmp/TEST.mp4",
@@ -112,10 +112,10 @@ def build_fake_transcription() -> dict:
 
 
 def main() -> int:
-    print(f"cartella di lavoro temporanea: {_WORKDIR}")
+    print(f"temporary working directory: {_WORKDIR}")
     print(f"vocabulary: {vocabulary.VOCABULARY_FILE}")
     if not os.path.isfile(vocabulary.VOCABULARY_FILE):
-        print("  (vocabulary.json assente: liste vuote, il test controlla solo la meccanica)")
+        print("  (vocabulary.json missing: empty lists, the test only checks the mechanics)")
 
     fake = build_fake_transcription()
     with open(os.path.join(_WORKDIR, "transcription.json"), "w", encoding="utf-8") as f:
@@ -125,19 +125,19 @@ def main() -> int:
     section("1. CONFIG")
     print(f"  OUTPUT_DIR   : {config.OUTPUT_DIR}")
     print(f"  marker       : {config.ENERGY_SPIKE_MARKER} / token '{config.ENERGY_SPIKE_TOKEN}'")
-    print(f"  lingua       : {config.WHISPER_LANGUAGE} | modello {config.WHISPER_MODEL}")
+    print(f"  language     : {config.WHISPER_LANGUAGE} | model {config.WHISPER_MODEL}")
     print(f"  clip target  : {config.TARGET_TOTAL_CLIPS}")
     print(f"  codec        : {' '.join(config.ffmpeg_video_encoder_args())}")
-    check(config.OUTPUT_DIR == _WORKDIR, "OUTPUT_DIR sovrascrivibile via ambiente")
+    check(config.OUTPUT_DIR == _WORKDIR, "OUTPUT_DIR overridable through the environment")
     check(config.ENERGY_SPIKE_TOKEN ==
           config.ENERGY_SPIKE_MARKER.strip("[]").lower().replace(" ", "_"),
-          "il token del marker deriva dal marker (una sola fonte)")
+          "the marker token derives from the marker (single source)")
     check("libx264" in " ".join(config.ffmpeg_video_encoder_args()) or
           "nvenc" in " ".join(config.ffmpeg_video_encoder_args()),
-          "argomenti del codec coerenti")
+          "codec arguments consistent")
 
     # ---------------------------------------------------------------- merge
-    section("2. MERGE — bridge sulle frasi clou")
+    section("2. MERGE — bridging key phrases")
     import merge_segments
 
     merge_segments.merge_whisper_segments()
@@ -146,29 +146,29 @@ def main() -> int:
     for i, seg in enumerate(merged, 1):
         print(f"    [{i}] {seg['start']:6.1f}-{seg['end']:6.1f}  {seg['text']}")
 
-    check(len(merged) == 4, f"6 segmenti -> 4 blocchi (trovati {len(merged)})")
+    check(len(merged) == 4, f"6 segments -> 4 blocks (found {len(merged)})")
     bridge = next((s for s in merged if "nanna" in s["text"].lower()), None)
-    check(bridge is not None, "il blocco con la frase clou esiste")
+    check(bridge is not None, "the block with the key phrase exists")
     if bridge:
-        check("gioco" in bridge["text"], "il seguito del payoff viene agganciato")
-        check("buonasera" in bridge["text"], "anche il setup prima del payoff viene agganciato")
+        check("gioco" in bridge["text"], "the payoff follow-up is attached")
+        check("buonasera" in bridge["text"], "the setup before the payoff is attached too")
 
     # ------------------------------------------------- simulazione audio_analysis
-    section("3. CONTRATTO DI audio_analysis (simulato)")
+    section("3. audio_analysis CONTRACT (simulated)")
     for seg in merged:
         seg["cinematic_spike"] = False
         seg["audio_multiplier"] = 1.0
     spike_raw = next((s for s in merged if config.ENERGY_SPIKE_MARKER in s["text"]), None)
-    check(spike_raw is not None, "il segmento col marker del picco esiste")
+    check(spike_raw is not None, "the segment with the spike marker exists")
     if spike_raw:
         spike_raw["cinematic_spike"] = True
         spike_raw["audio_multiplier"] = 3.0
     with open(os.path.join(_WORKDIR, "segments_with_audio.json"), "w", encoding="utf-8") as f:
         json.dump(merged, f, indent=2, ensure_ascii=False)
-    print("  (audio_analysis vero richiede numpy+soundfile+video.wav: qui se ne simula l'uscita)")
+    print("  (the real audio_analysis needs numpy+soundfile+video.wav: its output is simulated here)")
 
     # ---------------------------------------------------------------- score
-    section("4. SCORE — trigger, bonus picco, blacklist")
+    section("4. SCORE — triggers, spike bonus, blacklist")
     import score_segments
 
     score_segments.score_segments()
@@ -178,17 +178,17 @@ def main() -> int:
         print(f"    score={seg['score']:7.2f}  god_tier={str(seg['god_tier']):5}  {seg['text'][:44]}")
 
     texts = " | ".join(s["text"] for s in scored)
-    check(config.ENERGY_SPIKE_MARKER not in texts, "il marker grezzo non finisce nel testo finale")
+    check(config.ENERGY_SPIKE_MARKER not in texts, "the raw marker never reaches the final text")
     check(config.ENERGY_SPIKE_LABEL in texts,
-          f"il marker diventa leggibile ({config.ENERGY_SPIKE_LABEL})")
+          f"the marker becomes readable ({config.ENERGY_SPIKE_LABEL})")
 
     spike_seg = next((s for s in scored if config.ENERGY_SPIKE_LABEL in s["text"]), None)
-    check(spike_seg is not None, "il segmento col picco sopravvive allo scoring")
+    check(spike_seg is not None, "the segment with the spike survives scoring")
     if spike_seg:
-        check(spike_seg["god_tier"] is True, "il picco forza god_tier")
+        check(spike_seg["god_tier"] is True, "the spike forces god_tier")
         soglia = config.ENERGY_SPIKE_SCORE_BONUS * 3.0
         check(spike_seg["score"] > soglia,
-              f"bonus picco x moltiplicatore cinema ({spike_seg['score']} > {soglia})")
+              f"spike bonus x cinema multiplier ({spike_seg['score']} > {soglia})")
 
     # Blacklist: il confronto avviene su testo che NON perde gli accenti, quindi
     # la voce "pubblicità" scatta solo nella forma accentata.
@@ -196,39 +196,39 @@ def main() -> int:
         {"text": "sto parlando della pubblicità del canale", "start": 40.0, "end": 43.0})
     noacc = score_segments.compute_score(
         {"text": "sto parlando della pubblicita del canale", "start": 40.0, "end": 43.0})
-    print(f"    blacklist 'pubblicità': accento {acc} | senza accento {noacc}")
-    check(acc == 0.1, "blacklist del meta-streaming attiva")
+    print(f"    blacklist 'pubblicità': accented {acc} | unaccented {noacc}")
+    check(acc == 0.1, "meta-streaming blacklist active")
 
     # ---------------------------------------------------------------- qa
     section("5. QA VALIDATOR")
     import qa_validator
 
-    check(qa_validator.validate_and_sanitize() is True, "QA passa su dati coerenti")
+    check(qa_validator.validate_and_sanitize() is True, "QA passes on consistent data")
 
     # ---------------------------------------------------------------- sub
-    section("6. SOTTOTITOLI — il marker non finisce mai a schermo")
+    section("6. SUBTITLES — the marker never reaches the screen")
     import subtitles
 
     for token in (config.ENERGY_SPIKE_MARKER, config.ENERGY_SPIKE_TOKEN,
                   f" {config.ENERGY_SPIKE_MARKER} ", "ENERGYSPIKE", "ENERGY", "SPIKE"):
-        check(subtitles._is_meta_word(token), f"filtrato: {token!r}")
+        check(subtitles._is_meta_word(token), f"filtered out: {token!r}")
     for token in ("nanna", "ciao", "BOOM"):
-        check(not subtitles._is_meta_word(token), f"parola vera lasciata passare: {token!r}")
+        check(not subtitles._is_meta_word(token), f"real word allowed through: {token!r}")
 
     # ---------------------------------------------------------------- judge
-    section("7. JUDGE — prompt dal profilo")
+    section("7. JUDGE — prompt from the profile")
     try:
         import judge_agent
 
         prompt = judge_agent.build_system_prompt()
         prof = vocabulary.profile()
-        check(bool(prompt.strip()), "il prompt viene costruito")
+        check(bool(prompt.strip()), "the prompt is built")
         check(str(judge_agent.TARGET_TOTAL_CLIPS) in prompt,
-              "il numero di clip entra nel prompt")
+              "the clip count enters the prompt")
         if prof.get("name"):
-            check(prof["name"] in prompt, "il nome del profilo entra nel prompt")
+            check(prof["name"] in prompt, "the profile name enters the prompt")
         for genre in prof.get("genres") or []:
-            check(genre in prompt, f"il genere '{genre}' entra nel prompt")
+            check(genre in prompt, f"the genre '{genre}' enters the prompt")
 
         cases = [
             '{"clips": [{"id": 1}]}',
@@ -240,20 +240,20 @@ def main() -> int:
         for text in cases:
             judge_agent.safe_json_parse(text)
         check(judge_agent.safe_json_parse('{"clips": [{"id": 1}]}') == {"clips": [{"id": 1}]},
-              "safe_json_parse: json pulito")
+              "safe_json_parse: clean json")
         check(judge_agent.safe_json_parse("spazzatura") is None,
-              "safe_json_parse: spazzatura -> None senza eccezioni")
+              "safe_json_parse: garbage input -> None without raising")
     except ImportError as e:
-        print(f"  saltato: {e}")
+        print(f"  skipped: {e}")
 
     # ---------------------------------------------------------------- esito
-    section("ESITO")
+    section("RESULT")
     if FAILURES:
-        print(f"  {len(FAILURES)} controlli falliti:")
+        print(f"  {len(FAILURES)} checks failed:")
         for f in FAILURES:
             print(f"    - {f}")
         return 1
-    print("  tutti i controlli passati")
+    print("  all checks passed")
     return 0
 
 

@@ -1,21 +1,26 @@
 # ============================================================
-#  VOD -> Shorts pipeline  |  dipendenze Python
+#  VOD -> Shorts pipeline  |  Python dependencies
 # ============================================================
-#  Testato su: Python 3.12.3, Linux/WSL2 con GPU NVIDIA (CUDA 12.1)
-#  Python richiesto: 3.11+
+#  Tested on: Python 3.11.9 on Windows 11 and Python 3.12.3 on Linux/WSL2,
+#  both with an NVIDIA GPU (CUDA 12.1).
+#  Required Python: 3.11+
 #
-#  Installazione:
+#  Install:
 #      python -m venv .venv
 #      source .venv/bin/activate        # Windows: .venv\Scripts\activate
 #      pip install -r requirements.txt
 #
-#  ATTENZIONE A TORCH: il pacchetto PyPI `torch` di default e' la build CPU.
-#  Per la GPU servono le wheel CUDA. Se hai una NVIDIA, installa prima torch
-#  dall'indice PyTorch, poi il resto:
+#  On Windows, if activating the venv fails with an execution-policy error, call
+#  the interpreter by path instead. It installs into the right place either way:
+#      .venv\Scripts\python.exe -m pip install -r requirements.txt
+#
+#  WARNING ABOUT TORCH: the default PyPI `torch` package is the CPU build.
+#  A GPU needs the CUDA wheels. If you have an NVIDIA card, install torch from
+#  the PyTorch index first, then the rest:
 #      pip install torch==2.5.1 --index-url https://download.pytorch.org/whl/cu121
 #      pip install -r requirements.txt
-#  Senza GPU la pipeline funziona comunque: transcribe_engine rileva
-#  l'assenza di CUDA e degrada su CPU (molto piu' lenta).
+#  Without a GPU the pipeline still runs: transcribe_engine detects the absence
+#  of CUDA and falls back to CPU (much slower).
 # ============================================================
 
 # --- Core pipeline ---
@@ -26,14 +31,14 @@ soundfile==0.13.1
 requests==2.34.0
 openai==2.36.0
 
-# --- Librerie CUDA distribuite via pip ---
-# transcribe_engine.py le rende visibili a CTranslate2/faster-whisper: su
-# Linux/WSL via LD_LIBRARY_PATH, su Windows via os.add_dll_directory.
-# Esistono anche le wheel win_amd64, quindi funzionano su entrambi.
-# Con una installazione CUDA di sistema (o senza NVIDIA) puoi rimuoverle:
-# l'import è protetto e la pipeline degrada su CPU.
+# --- CUDA libraries distributed through pip ---
+# transcribe_engine.py makes these visible to CTranslate2/faster-whisper: on
+# Linux/WSL through LD_LIBRARY_PATH, on Windows through os.add_dll_directory.
+# win_amd64 wheels exist too, so they work on both.
+# With a system CUDA install (or without an NVIDIA card) you can drop both:
+# the import is guarded and the pipeline falls back to CPU.
 nvidia-cublas-cu12==12.1.3.1
 nvidia-cudnn-cu12==9.1.0.70
 
-# --- Solo per experiments/stable_ts_probe.py (confronto A/B, non parte della pipeline) ---
+# --- Only for stable_ts_probe.py (A/B comparison, not part of the pipeline) ---
 stable-ts==2.19.1

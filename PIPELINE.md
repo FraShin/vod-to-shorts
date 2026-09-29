@@ -21,7 +21,7 @@ VOD (.mp4)
    │                                  ▼
    │                          merged_segments.json
    │                                  │
-   │      audio_analysis.py ◄─────────┘  (legge anche video.wav)
+   │      audio_analysis.py ◄─────────┘  (also reads video.wav)
    │              │
    │              ▼
    │      segments_with_audio.json
@@ -61,8 +61,8 @@ Skipped if the file already exists and is non-empty.
 
 ```jsonc
 {
-  "source_vod": "stream.mp4",          // basename: usato per capire se la
-  "source_vod_path": "/path/stream.mp4", // trascrizione appartiene al VOD scelto
+  "source_vod": "stream.mp4",          // basename: used to tell whether the
+  "source_vod_path": "/path/stream.mp4", // transcript belongs to the chosen VOD
   "segments": [
     {
       "start": 12.34,
@@ -128,12 +128,12 @@ Same array shape, plus two fields per segment, and `end` may have been
 [
   {
     "start": 12.34,
-    "end": 20.15,              // esteso sulla coda energetica dell'urlo
+    "end": 20.15,              // extended over the energy tail of the scream
     "text": "...",
-    "words": [ /* l'ultima parola è riallineata alla nuova fine */ ],
+    "words": [ /* the last word is re-aligned to the new end */ ],
     "energy_spikes": [13.2],
-    "cinematic_spike": true,   // NUOVO
-    "audio_multiplier": 3.41   // NUOVO
+    "cinematic_spike": true,   // NEW
+    "audio_multiplier": 3.41   // NEW
   }
 ]
 ```
@@ -169,8 +169,8 @@ segment.
     "energy_spikes": [13.2],
     "cinematic_spike": true,
     "audio_multiplier": 3.41,
-    "score": 38.117,          // NUOVO
-    "god_tier": true          // NUOVO
+    "score": 38.117,          // NEW
+    "god_tier": true          // NEW
   }
 ]
 ```
@@ -206,14 +206,14 @@ stage 4's cooldown can be defeated by segments processed out of order.
 ```jsonc
 [
   {
-    "start": 9.84,             // allargato: padding, min 12 s, max 58 s
+    "start": 9.84,             // widened: padding, min 12 s, max 58 s
     "end": 27.5,
     "text": "...",
     "words": [ ... ],
     "energy_spikes": [13.2],
     "cinematic_spike": true,
     "audio_multiplier": 3.41,
-    "metadata": {              // NUOVO
+    "metadata": {              // NEW
       "id": 7,
       "tension_score": 8.5,
       "hook": "the hook written by the LLM",
