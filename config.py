@@ -81,13 +81,15 @@ def _env_bool(name: str, default: bool) -> bool:
 # PERCORSI
 # ==============================
 # Struttura attesa del progetto:
-#   <root>/input/    VOD sorgente .mp4
-#   <root>/output/   JSON intermedi + video.wav
-#   <root>/clips/    clip prodotte
-#   <root>/logs/     log di ogni stadio
+#   <root>/input/          VOD sorgente .mp4
+#   <root>/output/         JSON intermedi + video.wav
+#   <root>/clips/          clip prodotte
+#   <root>/clips_archive/  clip delle run precedenti
+#   <root>/logs/           log di ogni stadio
 INPUT_DIR = os.environ.get("INPUT_DIR") or os.path.join(_PROJECT_ROOT, "input")
 OUTPUT_DIR = os.environ.get("OUTPUT_DIR") or os.path.join(_PROJECT_ROOT, "output")
 CLIPS_OUTPUT_FOLDER = os.environ.get("CLIPS_DIR") or os.path.join(_PROJECT_ROOT, "clips")
+CLIPS_ARCHIVE_DIR = os.environ.get("CLIPS_ARCHIVE_DIR") or os.path.join(_PROJECT_ROOT, "clips_archive")
 LOGS_DIR = os.environ.get("LOGS_DIR") or os.path.join(_PROJECT_ROOT, "logs")
 
 # ==============================

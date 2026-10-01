@@ -96,7 +96,7 @@ it first saves you from discovering a missing encoder twenty minutes in.
 python main.py                        # latest .mp4 in input/, 10 clips
 python main.py --vod stream.mp4       # a specific VOD
 python main.py --clips 5              # how many clips
-python main.py --no-wipe              # keep output/ and clips/ from last run
+python main.py --no-wipe              # keep output/ and clips/ as they are
 python main.py --check                # environment check
 ```
 
@@ -114,12 +114,14 @@ your-project/
 ├── input/            ← drop your VODs here
 ├── output/           ← intermediate JSON + video.wav
 ├── clips/            ← finished clips
+├── clips_archive/    ← clips from previous runs, moved here each time
 └── logs/             ← one log per stage
 ```
 
-`input/`, `output/`, `clips/` and `logs/` are created automatically. **Note:**
-`main.py` wipes `output/` and `clips/` at startup so a new run starts clean —
-use `--no-wipe` to keep them.
+`input/`, `output/`, `clips/`, `clips_archive/` and `logs/` are created
+automatically. **Note:** at startup `main.py` clears `output/` and moves the clips
+from the previous run to `clips_archive/<date-time>/`, so a new run can never throw
+away a clip you already produced — use `--no-wipe` to leave both untouched.
 
 ---
 

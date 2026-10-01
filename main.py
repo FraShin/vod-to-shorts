@@ -9,7 +9,7 @@ Uso:
     python main.py                     # ultimo .mp4 in input/, 10 clip
     python main.py --vod vod.mp4       # VOD specifico
     python main.py --clips 5           # quante clip
-    python main.py --no-wipe           # non svuotare output/ e clips/
+    python main.py --no-wipe           # non toccare output/ e clips/
     python main.py --check             # verifica l'ambiente ed esci
 """
 import argparse
@@ -30,6 +30,7 @@ import vocabulary
 SCRIPTS_DIR = config.SCRIPTS_DIR
 OUTPUT_DIR = config.OUTPUT_DIR
 CLIPS_DIR = config.CLIPS_OUTPUT_FOLDER
+CLIPS_ARCHIVE_DIR = config.CLIPS_ARCHIVE_DIR
 LOGS_DIR = config.LOGS_DIR
 
 def script_path(name):
@@ -39,18 +40,58 @@ def output_path(name):
     return os.path.join(OUTPUT_DIR, name) if name else ""
 
 
+def archive_existing_clips():
+    """Sposta le clip della run precedente in clips_archive/<data-ora>/.
+
+    Ritorna quante ne ha spostate. Se non c'è niente da archiviare ritorna 0
+    senza creare cartelle: una run dopo una run a vuoto resta pulita.
+    """
+    if not os.path.isdir(CLIPS_DIR):
+        return 0
+    files = [n for n in os.listdir(CLIPS_DIR)
+             if os.path.isfile(os.path.join(CLIPS_DIR, n))]
+    if not files:
+        return 0
+
+    dest = os.path.join(CLIPS_ARCHIVE_DIR, time.strftime("%Y-%m-%d_%H-%M-%S"))
+    os.makedirs(dest, exist_ok=True)
+
+    archiviate = 0
+    for name in files:
+        try:
+            shutil.move(os.path.join(CLIPS_DIR, name), os.path.join(dest, name))
+            archiviate += 1
+        except OSError as e:
+            print(f"⚠️  non riesco ad archiviare {name}: {e}")
+
+    # Sottocartelle residue: via anche quelle, altrimenti la run nuova ci
+    # scriverebbe dentro e i conteggi delle clip non tornerebbero.
+    for name in os.listdir(CLIPS_DIR):
+        path = os.path.join(CLIPS_DIR, name)
+        if os.path.isdir(path):
+            shutil.rmtree(path, ignore_errors=True)
+
+    return archiviate
+
+
 def wipe_work_dirs():
-    """Svuota output/ e clips/ all'avvio (disabilita con PIPELINE_NO_WIPE=1)."""
-    for folder in (OUTPUT_DIR, CLIPS_DIR):
-        if not os.path.isdir(folder):
-            continue
-        for name in os.listdir(folder):
-            path = os.path.join(folder, name)
+    """Azzera output/ e archivia le clip (disabilita con PIPELINE_NO_WIPE=1).
+
+    Le clip NON si cancellano: spostarle costa niente, recuperarle è
+    impossibile. output/ invece è solo JSON intermedi e si può buttare.
+    """
+    if os.path.isdir(OUTPUT_DIR):
+        for name in os.listdir(OUTPUT_DIR):
+            path = os.path.join(OUTPUT_DIR, name)
             if os.path.isfile(path) or os.path.islink(path):
                 os.remove(path)
             elif os.path.isdir(path):
                 shutil.rmtree(path)
-    print("🧹 Cartelle output e clips azzerate per nuova run.\n")
+
+    archiviate = archive_existing_clips()
+    if archiviate:
+        print(f"📦 {archiviate} clip della run precedente in {CLIPS_ARCHIVE_DIR}/")
+    print("🧹 output azzerato per nuova run.\n")
 
 
 # ==============================
@@ -73,7 +114,7 @@ def parse_args(argv=None):
     )
     parser.add_argument(
         "--no-wipe", action="store_true",
-        help="non svuotare output/ e clips/ all'avvio (utile per riprendere un run)",
+        help="non toccare output/ e clips/ all'avvio (utile per riprendere un run)",
     )
     parser.add_argument(
         "--check", action="store_true",
