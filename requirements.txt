@@ -15,9 +15,9 @@
 #      .venv\Scripts\python.exe -m pip install -r requirements.txt
 #
 #  WARNING ABOUT TORCH: the default PyPI `torch` package is the CPU build.
-#  A GPU needs the CUDA wheels. If you have an NVIDIA card, install torch from
-#  the PyTorch index first, then the rest:
-#      pip install torch==2.5.1 --index-url https://download.pytorch.org/whl/cu121
+#  A GPU needs the CUDA wheels. If you have an NVIDIA card, install torch and
+#  torchaudio from the PyTorch index first, then the rest:
+#      pip install torch==2.5.1 torchaudio==2.5.1 --index-url https://download.pytorch.org/whl/cu121
 #      pip install -r requirements.txt
 #  Without a GPU the pipeline still runs: transcribe_engine detects the absence
 #  of CUDA and falls back to CPU (much slower).
@@ -42,3 +42,11 @@ nvidia-cudnn-cu12==9.1.0.70
 
 # --- Only for stable_ts_probe.py (A/B comparison, not part of the pipeline) ---
 stable-ts==2.19.1
+# stable-ts depends on torchaudio without pinning it, so pip installs the newest
+# release, which is built against the newest torch. Its compiled DLLs then refuse
+# to load against the torch pinned above -- `OSError [WinError 127]` at import --
+# while `pip check` still reports "No broken requirements found", because the
+# mismatch is in the binaries and not in the metadata. Pinning the pair to the
+# same version is what keeps it loadable. With a GPU, install this one from the
+# PyTorch cu121 index as well (see the header).
+torchaudio==2.5.1
